@@ -14,18 +14,6 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
-model Post {
-    id        Int      @id @default(autoincrement())
-    name      String
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-
-    createdBy   User   @relation(fields: [createdById], references: [id])
-    createdById String
-
-    @@index([name])
-}
-
 // Necessary for Next auth
 model Account {
     id                       String  @id @default(cuid())
@@ -42,6 +30,11 @@ model Account {
     session_state            String?
     user                     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
     refresh_token_expires_in Int?
+    ownedRooms               Room[]  @relation("RoomOwner")
+    participantIn            Room?   @relation("RoomParticipants", fields: [roomId], references: [id])
+    roomId                   String?
+    songsAdded               Song[]
+    votes                    Vote[]
 
     @@unique([provider, providerAccountId])
 }
@@ -55,14 +48,14 @@ model Session {
 }
 
 model User {
-    id            String    @id @default(cuid())
-    name          String?
-    email         String?   @unique
-    emailVerified DateTime?
-    image         String?
-    accounts      Account[]
-    sessions      Session[]
-    posts         Post[]
+    id             String    @id @default(cuid())
+    name           String?
+    email          String?   @unique
+    emailVerified  DateTime?
+    image          String?
+    accounts       Account[]
+    sessions       Session[]
+       
 }
 
 model VerificationToken {
@@ -71,4 +64,54 @@ model VerificationToken {
     expires    DateTime
 
     @@unique([identifier, token])
+}
+
+//App Data Models
+
+model Room {
+    id            String    @id  @default(cuid())
+    name          String
+    passcode      String    @unique
+    owner         Account   @relation("RoomOwner", fields: [ownerId], references: [id])
+    ownerId       String 
+    createdAt     DateTime  @default(now())
+    participants  Account[] @relation("RoomParticipants")
+    queue         Queue     @relation(fields: [queueId], references: [id])
+    queueId       String    @unique
+}
+
+model Queue {
+    id       String  @id @default(cuid())
+    songs    Song[]
+    room     Room?
+}
+
+model Song {
+    id         String  @id  @default(cuid())
+    name       String
+    url        String  @unique
+    queue      Queue   @relation(fields: [queueId], references: [id])
+    queueId    String
+    upvotes    Int     @default(0)
+    downvotes  Int     @default(0)
+    addedBy    Account @relation(fields: [addedById], references: [id])
+    addedById  String
+    vote       Vote[]
+}
+
+model Vote {
+    id          String    @id @default(cuid())
+    song        Song      @relation(fields: [songId], references: [id], onDelete: Cascade)
+    songId      String
+    user        Account   @relation(fields: [userId], references: [id], onDelete: Cascade)
+    userId      String
+    voteType    VoteType
+    createdAt   DateTime  @default(now())
+    
+    @@unique([songId, userId])
+}
+
+enum VoteType {
+    UPVOTE
+    DOWNVOTE
 }
