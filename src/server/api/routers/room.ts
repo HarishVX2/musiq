@@ -19,7 +19,9 @@ export const roomRouter = createTRPCRouter({
       }
 
       const queue = await ctx.db.queue.create({
-        data: {},
+        data: {
+          ownerId: user.id,
+        },
       });
 
       const room = await ctx.db.room.create({
