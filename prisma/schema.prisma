@@ -28,13 +28,16 @@ model Account {
     scope                    String?
     id_token                 String? // @db.Text
     session_state            String?
-    user                     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+    user                     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
     refresh_token_expires_in Int?
-    ownedRooms               Room[]  @relation("RoomOwner")
-    participantIn            Room?   @relation("RoomParticipants", fields: [roomId], references: [id])
+    ownedRooms               Room[]   @relation("RoomOwner")
+    participantIn            Room?    @relation("RoomParticipants", fields: [roomId], references: [id])
     roomId                   String?
     songsAdded               Song[]
     votes                    Vote[]
+    queue                    Queue?   @relation("OwnedQueue")
+    participatingQueue       Queue?   @relation("ParticipatingQueue", fields: [ParticipatingQueueId], references: [id])
+    ParticipatingQueueId     String?  @unique 
 
     @@unique([provider, providerAccountId])
 }
@@ -76,14 +79,17 @@ model Room {
     ownerId       String 
     createdAt     DateTime  @default(now())
     participants  Account[] @relation("RoomParticipants")
-    queue         Queue     @relation(fields: [queueId], references: [id])
-    queueId       String    @unique
+    queue         Queue?
 }
 
 model Queue {
-    id       String  @id @default(cuid())
-    songs    Song[]
-    room     Room?
+    id            String    @id @default(cuid())
+    owner         Account   @relation("OwnedQueue", fields: [ownerId], references: [id], onDelete: Cascade)
+    ownerId       String    @unique
+    participants  Account[] @relation("ParticipatingQueue")
+    songs         Song[]
+    room          Room      @relation(fields: [roomId], references: [id], onDelete: Cascade)
+    roomId        String    @unique
 }
 
 model Song {
