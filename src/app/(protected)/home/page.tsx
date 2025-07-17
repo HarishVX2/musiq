@@ -1,18 +1,24 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { api as trpc } from "@/trpc/react";
 
 export default function Home() {
-  const mutation = trpc.room.create.useMutation();
-  const [isDisabled, setIsDisabled] = useState(false);
+  const roomMutation = trpc.room.create.useMutation();
+  const room = roomMutation.data;
+  const { data: rooms, isPending, isError } = trpc.room.getAll.useQuery();
+  console.log(rooms);
+
+  // useEffect(()=>{
+
+  // }, [rooms])
 
   const handleClick = () => {
-    setIsDisabled(true);
-    setTimeout(() => {
-      const result = mutation.mutate({ name: "my_room1", passcode: "xyz123" });
-      setIsDisabled(false);
-    }, 5000);
+    const result = roomMutation.mutate({
+      name: "tria21",
+      passcode: "xyz1232",
+    });
   };
+
   return (
     <div className="h-screen w-screen">
       <div className="mx-auto w-[400px]">
@@ -20,10 +26,23 @@ export default function Home() {
         <button
           className="rounded-sm border p-2 hover:cursor-pointer disabled:bg-black"
           onClick={handleClick}
-          disabled={isDisabled}
+          disabled={roomMutation.isPending}
         >
           Create room
         </button>
+        {roomMutation.isPending && <p>...Loading</p>}
+        {roomMutation.isError && <p>Cannot create room</p>}
+        {rooms && rooms.length === 0 && <p>No rooms found.</p>}
+        {rooms && rooms.length > 0 && (
+          <ul className="space-y-2">
+            {rooms.map((room) => (
+              <li key={room.id} className="rounded border p-2">
+                <span className="font-bold">{room.name}</span>
+                <span className="ml-2 text-gray-500">({room.passcode})</span>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </div>
   );

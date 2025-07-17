@@ -9,7 +9,7 @@
 
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
-import { ZodError } from "zod";
+import { z, ZodError } from "zod";
 
 import { auth } from "@/server/auth";
 import { db } from "@/server/db";
@@ -128,6 +128,24 @@ export const protectedProcedure = t.procedure
       ctx: {
         // infers the `session` as non-nullable
         session: { ...ctx.session, user: ctx.session.user },
+      },
+    });
+  });
+
+export const roomProcedure = t.procedure
+  .input(z.object({ id: z.string() }))
+  .use(async ({ ctx, input, next }) => {
+    const room = await ctx.db.room.findUnique({
+      where: {
+        id: input.id,
+      },
+    });
+    if (!room) throw new TRPCError({ code: "FORBIDDEN" });
+
+    return next({
+      ctx: {
+        ...ctx,
+        room,
       },
     });
   });

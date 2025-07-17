@@ -31,13 +31,11 @@ model Account {
     user                     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
     refresh_token_expires_in Int?
     ownedRooms               Room[]   @relation("RoomOwner")
-    participantIn            Room?    @relation("RoomParticipants", fields: [roomId], references: [id])
-    roomId                   String?
+    participantIn            Room[]   @relation("RoomParticipants")
     songsAdded               Song[]
     votes                    Vote[]
-    queue                    Queue?   @relation("OwnedQueue")
-    participatingQueue       Queue?   @relation("ParticipatingQueue", fields: [ParticipatingQueueId], references: [id])
-    ParticipatingQueueId     String?  @unique 
+    queue                    Queue[]  @relation("OwnedQueue")
+    participatingQueue       Queue[]  @relation("ParticipatingQueue")
 
     @@unique([provider, providerAccountId])
 }
@@ -74,7 +72,7 @@ model VerificationToken {
 model Room {
     id            String    @id  @default(cuid())
     name          String
-    passcode      String    @unique
+    passcode      String    
     owner         Account   @relation("RoomOwner", fields: [ownerId], references: [id])
     ownerId       String 
     createdAt     DateTime  @default(now())
@@ -85,7 +83,7 @@ model Room {
 model Queue {
     id            String    @id @default(cuid())
     owner         Account   @relation("OwnedQueue", fields: [ownerId], references: [id], onDelete: Cascade)
-    ownerId       String    @unique
+    ownerId       String    
     participants  Account[] @relation("ParticipatingQueue")
     songs         Song[]
     room          Room      @relation(fields: [roomId], references: [id], onDelete: Cascade)
