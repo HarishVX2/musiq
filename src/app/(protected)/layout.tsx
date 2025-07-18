@@ -9,7 +9,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               <div className="flex items-center space-x-2">
                 <Music className="h-8 w-8 text-purple-400" />
                 <h1 className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-2xl font-bold text-transparent">
-                  VoteBeats
+                  MusiQ
                 </h1>
               </div>
               {/* <div className="hidden items-center space-x-1 rounded-full bg-white/10 p-1 md:flex">

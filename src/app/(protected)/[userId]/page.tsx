@@ -1,48 +1,138 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, type FormEvent } from "react";
+import { useRouter } from "next/router";
+import { Plus, Music, UserPlus } from "lucide-react";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { api as trpc } from "@/trpc/react";
+import {
+  CreateRoomModal,
+  JoinRoom,
+  RoomToastContainer,
+  Search,
+  showSuccessToast,
+  UserRooms,
+} from "@/app/_components";
+import { signOut } from "next-auth/react";
 
 export default function Home() {
+  // const router = useRouter();
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [joinRoomId, setJoinRoomId] = useState("");
+  const [joinPassword, setJoinPassword] = useState("");
+  const [createForm, setCreateForm] = useState({
+    name: "",
+    passcode: "",
+  });
+
+  //queries
+  const { data: rooms, isPending, isError } = trpc.room.getAll.useQuery();
+  const { data: userRooms, refetch: refetchUserRooms } =
+    trpc.room.getAll?.useQuery() || {
+      data: [],
+      refetch: () => {},
+    };
+
+  //mutation
   const roomMutation = trpc.room.create.useMutation();
   const room = roomMutation.data;
-  const { data: rooms, isPending, isError } = trpc.room.getAll.useQuery();
+  const createRoomMutation = trpc.room.create.useMutation({
+    onSuccess: (data) => {
+      showSuccessToast("Success! Room created successfully.");
 
-  // useEffect(()=>{
+      setShowCreateForm(false);
+      setCreateForm({
+        name: "",
+        passcode: "",
+      });
+      // refetchUserRooms();
+      // refetchPublicRooms();
+      // router.push(`/room/${data.id}`);
+    },
+  });
 
-  // }, [rooms])
+  const joinRoomMutation = trpc.room.join.useMutation({
+    onSuccess: (data) => {
+      setJoinRoomId("");
+      setJoinPassword("");
+      // router.push(`/room/${joinRoomId}`);
+    },
+  });
 
-  const handleClick = () => {
-    const result = roomMutation.mutate({
-      name: "tria21",
-      passcode: "xyz1232",
+  const handleJoinRoom = (roomId: string, isPrivate: boolean = false) => {
+    if (isPrivate && !joinPassword) {
+      setJoinRoomId(roomId);
+      return;
+    }
+
+    joinRoomMutation.mutate({
+      roomId,
+      passcode: joinPassword,
     });
   };
 
+  const handleCreateRoom = (e: FormEvent) => {
+    createRoomMutation.mutate(createForm);
+  };
+
   return (
-    <div className="h-screen w-screen">
-      <div className="mx-auto w-[400px]">
-        <h1 className="text-3xl font-bold">MusiQ Home</h1>
+    <div className="mx-auto max-w-7xl px-6 py-8">
+      <RoomToastContainer />
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <h1 className="mb-2 text-3xl font-bold text-white">Music Rooms</h1>
+          <p className="text-white/70">
+            Create or join rooms to share music with others
+          </p>
+        </div>
         <button
-          className="rounded-sm border p-2 hover:cursor-pointer disabled:bg-black"
-          onClick={handleClick}
-          disabled={roomMutation.isPending}
+          onClick={() => signOut()}
+          className="rounded-lg bg-red-600 px-4 py-2 text-white transition-colors hover:bg-red-700"
         >
-          Create room
+          Sign Out
         </button>
-        {roomMutation.isPending && <p>...Loading</p>}
-        {roomMutation.isError && <p>Cannot create room</p>}
-        {rooms && rooms.length === 0 && <p>No rooms found.</p>}
-        {rooms && rooms.length > 0 && (
-          <ul className="space-y-2">
-            {rooms.map((room) => (
-              <li key={room.id} className="rounded border p-2">
-                <span className="font-bold">{room.name}</span>
-                <span className="ml-2 text-gray-500">({room.passcode})</span>
-              </li>
-            ))}
-          </ul>
-        )}
       </div>
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+        {/* Left Column  */}
+        <div className="space-y-6 lg:col-span-1">
+          {/* Create Room Button */}
+          <div className="rounded-2xl border border-white/20 bg-white/10 p-6 backdrop-blur-sm">
+            <button
+              onClick={() => setShowCreateForm(true)}
+              className="flex w-full items-center justify-center space-x-2 rounded-xl bg-purple-600 px-6 py-3 text-white transition-colors hover:bg-purple-700"
+            >
+              <Plus className="h-5 w-5" />
+              <span>Create New Room</span>
+            </button>
+          </div>
+
+          {/* Join Room */}
+          <JoinRoom
+            joinRoomId={joinRoomId}
+            joinPassword={joinPassword}
+            handleJoinRoom={handleJoinRoom}
+            setJoinRoomId={setJoinRoomId}
+            setJoinPassword={setJoinPassword}
+            joinRoomMutation={joinRoomMutation}
+          />
+        </div>
+
+        {/* Right Column */}
+        <div className="space-y-6 lg:col-span-2">
+          {/* Your Rooms */}
+          <UserRooms userRooms={userRooms} />
+        </div>
+      </div>
+      {/* Create Room Modal */}
+      {showCreateForm && (
+        <CreateRoomModal
+          createForm={createForm}
+          setCreateForm={setCreateForm}
+          setShowCreateForm={setShowCreateForm}
+          handleCreateRoom={handleCreateRoom}
+          createRoomMutation={createRoomMutation}
+        />
+      )}
     </div>
   );
 }
