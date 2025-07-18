@@ -133,12 +133,13 @@ export const protectedProcedure = t.procedure
   });
 
 export const roomProcedure = t.procedure
-  .input(z.object({ id: z.string() }))
+  .input(z.string())
   .use(async ({ ctx, input, next }) => {
     const room = await ctx.db.room.findUnique({
       where: {
-        id: input.id,
+        id: input,
       },
+      select: { id: true, queue: true },
     });
     if (!room) throw new TRPCError({ code: "FORBIDDEN" });
 

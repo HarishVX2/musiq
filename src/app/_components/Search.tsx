@@ -1,13 +1,13 @@
-import { Plus, Search as SearchIcon } from "lucide-react";
-import type { SongType } from "./Song";
 import React from "react";
+import { Plus, Search as SearchIcon } from "lucide-react";
+import type { YouTubeSearchResult } from "@/lib/youtube/youtube";
 
 export type SearchProps = {
   searchQuery: string;
   setSearchQuery: (value: string) => void;
   isSearching: boolean;
-  searchResults: SongType[];
-  addToQueue: (song: SongType) => void;
+  searchResults: YouTubeSearchResult[];
+  addToQueue: (song: YouTubeSearchResult) => void;
 };
 
 export const Search = ({
@@ -41,20 +41,20 @@ export const Search = ({
             <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-purple-400"></div>
           </div>
         ) : searchResults.length > 0 ? (
-          searchResults.map((song) => (
+          searchResults.map((song, index) => (
             <div
-              key={song.id}
+              key={index}
               className="rounded-xl bg-white/5 p-4 transition-all duration-200 hover:bg-white/10"
             >
               <div className="flex items-center justify-between">
                 <div className="min-w-0 flex-1">
                   <h3 className="truncate font-medium text-white">
-                    {song.title}
+                    {song.snippet.title}
                   </h3>
                   <p className="truncate text-sm text-white/70">
-                    {song.artist}
+                    {song.snippet.channelTitle}
                   </p>
-                  <p className="text-xs text-white/50">{song.duration}</p>
+                  {/* <p className="text-xs text-white/50">{song.duration}</p> */}
                 </div>
                 <button
                   onClick={() => addToQueue(song)}

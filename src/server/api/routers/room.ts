@@ -36,18 +36,37 @@ export const roomRouter = createTRPCRouter({
             create: { ownerId: user.id },
           },
         },
+
+        select: { id: true },
       });
 
       return room;
     }),
 
-  findRoom: roomProcedure.query(async ({ ctx }) => {
-    const queue = await ctx.db.queue.findFirst({
-      where: {
-        roomId: ctx.room.id,
-      },
-    });
+  join: protectedProcedure
+    .input(z.object({ roomId: z.string(), passcode: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      try {
+        const room = await ctx.db.room.update({
+          where: {
+            id: input.roomId,
+          },
+          data: {
+            participants: {
+              connect: {
+                id: ctx.session.user.id,
+              },
+            },
+          },
+        });
+        return room;
+      } catch (e) {
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      }
+    }),
 
+  getRoomQueue: roomProcedure.query(async ({ ctx }) => {
+    const queue = ctx.room.queue;
     return queue;
   }),
 
