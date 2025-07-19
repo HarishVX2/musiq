@@ -1,6 +1,5 @@
 "use client";
 import { useState, useEffect, type FormEvent } from "react";
-import { useRouter } from "next/router";
 import { Plus, Music, UserPlus } from "lucide-react";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -16,7 +15,6 @@ import {
 import { signOut } from "next-auth/react";
 
 export default function Home() {
-  // const router = useRouter();
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [joinRoomId, setJoinRoomId] = useState("");
   const [joinPassword, setJoinPassword] = useState("");
@@ -26,9 +24,13 @@ export default function Home() {
   });
 
   //queries
-  const { data: rooms, isPending, isError } = trpc.room.getAll.useQuery();
+  const {
+    data: rooms,
+    isPending,
+    isError,
+  } = trpc.room.getAll.useQuery(undefined, { refetchOnWindowFocus: false });
   const { data: userRooms, refetch: refetchUserRooms } =
-    trpc.room.getAll?.useQuery() || {
+    trpc.room.getAll?.useQuery(undefined, { refetchOnWindowFocus: false }) || {
       data: [],
       refetch: () => {},
     };
@@ -45,9 +47,7 @@ export default function Home() {
         name: "",
         passcode: "",
       });
-      // refetchUserRooms();
-      // refetchPublicRooms();
-      // router.push(`/room/${data.id}`);
+      refetchUserRooms();
     },
   });
 
@@ -55,7 +55,6 @@ export default function Home() {
     onSuccess: (data) => {
       setJoinRoomId("");
       setJoinPassword("");
-      // router.push(`/room/${joinRoomId}`);
     },
   });
 

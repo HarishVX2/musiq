@@ -1,3 +1,4 @@
+"use client";
 import {
   Play,
   ChevronDown,
@@ -5,15 +6,20 @@ import {
   Heart,
   MoreVertical,
 } from "lucide-react";
+import { useRef, useState } from "react";
+import LiteYoutubeEmbed from "react-lite-youtube-embed";
 
 export type SongType = {
-  id: number;
-  title: string;
+  id: string;
+  name: string;
   artist: string;
-  votes: number;
-  addedBy: string;
-  timeAdded: string;
-  status: string;
+  url: string;
+  _count: {
+    vote: number;
+  };
+  addedById: string;
+  timeAdded?: string;
+  status?: string;
   duration?: string;
   album?: string;
 };
@@ -21,10 +27,13 @@ export type SongType = {
 export type SongProps = {
   song: SongType;
   index: number;
-  voteForSong: (songId: number, increment?: boolean) => void;
+  voteForSong: (songId: string, increment?: boolean) => void;
 };
 
 export const Song = ({ song, index, voteForSong }: SongProps) => {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const ytRef = useRef<HTMLIFrameElement>(null);
+
   return (
     <div
       className={`rounded-xl border bg-white/5 p-4 transition-all duration-200 ${
@@ -33,6 +42,13 @@ export const Song = ({ song, index, voteForSong }: SongProps) => {
           : "border-white/10 hover:border-white/20 hover:bg-white/10"
       }`}
     >
+      <LiteYoutubeEmbed
+        id="hl3-ZPg-JAA"
+        title="Rich Spirit"
+        ref={ytRef}
+        enableJsApi
+        style={{ display: "none" }}
+      />
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <div
@@ -42,15 +58,25 @@ export const Song = ({ song, index, voteForSong }: SongProps) => {
                 : "bg-white/10 text-white/70"
             }`}
           >
-            {song.status === "playing" ? (
-              <Play className="h-4 w-4" />
+            {true ? (
+              <button
+                onClick={() => {
+                  setIsPlaying((oldState) => !oldState);
+                  ytRef.current?.contentWindow?.postMessage(
+                    `{"event": "command", "func": "${isPlaying ? "pauseVideo" : "playVideo"}"}`,
+                    "*",
+                  );
+                }}
+              >
+                <Play className="h-4 w-4" />
+              </button>
             ) : (
               index + 1
             )}
           </div>
           <div className="flex-1">
             <h3 className="flex items-center font-medium text-white">
-              {song.title}
+              {song.name}
               {song.status === "playing" && (
                 <span className="ml-2 rounded-full bg-purple-500 px-2 py-1 text-xs">
                   NOW PLAYING
@@ -59,7 +85,7 @@ export const Song = ({ song, index, voteForSong }: SongProps) => {
             </h3>
             <p className="text-sm text-white/70">{song.artist}</p>
             <p className="text-xs text-white/50">
-              Added by {song.addedBy} • {song.timeAdded}
+              Added by {song.addedById} • {song.timeAdded}
             </p>
           </div>
         </div>
@@ -74,7 +100,7 @@ export const Song = ({ song, index, voteForSong }: SongProps) => {
             </button>
             <div className="flex items-center space-x-1 rounded-full bg-white/10 px-3 py-1">
               <Heart className="h-4 w-4 text-pink-400" />
-              <span className="font-medium">{song.votes}</span>
+              <span className="font-medium">{song._count.vote}</span>
             </div>
             <button
               onClick={() => voteForSong(song.id, true)}

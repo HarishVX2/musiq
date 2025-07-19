@@ -91,14 +91,16 @@ model Queue {
 }
 
 model Song {
-    id         String  @id  @default(cuid())
+    id         String   @id  @default(cuid())
     name       String
-    url        String  @unique
-    queue      Queue   @relation(fields: [queueId], references: [id])
+    artist     String
+    url        String   @unique
+    timeAdded  DateTime @default(now())
+    queue      Queue    @relation(fields: [queueId], references: [id])
     queueId    String
-    upvotes    Int     @default(0)
-    downvotes  Int     @default(0)
-    addedBy    Account @relation(fields: [addedById], references: [id])
+    upvotes    Int      @default(0)
+    downvotes  Int      @default(0)
+    addedBy    Account  @relation(fields: [addedById], references: [id])
     addedById  String
     vote       Vote[]
 }

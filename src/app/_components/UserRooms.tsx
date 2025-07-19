@@ -1,9 +1,11 @@
 import { Calendar, Music, Users, ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 type Room = {
   id: string;
   name: string;
   createdAt: Date;
+  ownerId: string;
 };
 
 type UserRoomsProps = {
@@ -20,8 +22,7 @@ export const UserRooms = ({ userRooms }: UserRoomsProps) => {
       <div className="space-y-3">
         {userRooms?.length === 0 ? (
           <p className="py-8 text-center text-white/70">
-            You haven't created any rooms yet. Create your first room to get
-            started!
+            You haven't created any rooms yet!
           </p>
         ) : (
           userRooms?.map((room) => (
@@ -51,13 +52,13 @@ export const UserRooms = ({ userRooms }: UserRoomsProps) => {
                   </div>
                 </div>
               </div>
-              <button
-                // onClick={() => router.push(`/room/${room.id}`)}
+              <Link
+                href={`${room.ownerId}/${room.id}/dashboard`}
                 className="flex items-center space-x-2 rounded-lg bg-purple-600 px-4 py-2 text-white transition-colors hover:bg-purple-700"
               >
                 <span>Enter</span>
                 <ArrowRight className="h-4 w-4" />
-              </button>
+              </Link>
             </div>
           ))
         )}

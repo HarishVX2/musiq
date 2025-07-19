@@ -1,5 +1,5 @@
 import { toast, ToastContainer } from "react-toastify";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, XCircle } from "lucide-react";
 
 export const showSuccessToast = (message: string) => {
   toast.success(message, {
@@ -7,6 +7,15 @@ export const showSuccessToast = (message: string) => {
       "!bg-white/10 !backdrop-blur-sm !border !border-white/20 !text-white !rounded-xl",
     progressClassName: "!bg-green-400",
     icon: <CheckCircle className="h-5 w-5 text-green-400" />,
+  });
+};
+
+export const showErrorToast = (message: string) => {
+  toast.error(message, {
+    className:
+      "!bg-white/10 !backdrop-blur-sm !border !border-white/20 !text-white !rounded-xl",
+    progressClassName: "!bg-red-400",
+    icon: <XCircle className="h-5 w-5 text-red-400" />,
   });
 };
 

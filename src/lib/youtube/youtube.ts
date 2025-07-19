@@ -9,13 +9,6 @@ const youtube = yt({
 export { youtube };
 
 // Types for YouTube API responses
-export type YouTubeVideo = {
-  id: string;
-  snippet: {
-    title: string;
-    artist: string;
-  };
-};
 
 export interface YouTubeSearchResult {
   id: {

@@ -1,6 +1,8 @@
 import { roomRouter } from "@/server/api/routers/room";
 import { createCallerFactory, createTRPCRouter } from "@/server/api/trpc";
 import { youtubeRouter } from "./routers/youtube";
+import { songRouter } from "./routers/song";
+import { queueRouter } from "./routers/queue";
 
 /**
  * This is the primary router for your server.
@@ -9,7 +11,9 @@ import { youtubeRouter } from "./routers/youtube";
  */
 export const appRouter = createTRPCRouter({
   room: roomRouter,
+  song: songRouter,
   youtube: youtubeRouter,
+  queue: queueRouter,
 });
 
 // export type definition of API
