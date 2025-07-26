@@ -71,15 +71,8 @@ export const songRouter = createTRPCRouter({
         throw new TRPCError({ code: "NOT_FOUND", message: "Song not found" });
 
       try {
-        await ctx.db.vote.upsert({
-          where: {
-            songId_userId: {
-              songId: input.songId,
-              userId: acc.id,
-            },
-          },
-          update: { voteType: "UPVOTE" },
-          create: {
+        await ctx.db.vote.create({
+          data: {
             songId: input.songId,
             userId: acc.id,
             voteType: "UPVOTE",
@@ -88,7 +81,7 @@ export const songRouter = createTRPCRouter({
       } catch (e) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "Could not upvote",
+          message: "Already upvoted",
         });
       }
       return { status: "Upvoted" };
@@ -110,19 +103,19 @@ export const songRouter = createTRPCRouter({
         throw new TRPCError({ code: "NOT_FOUND", message: "Song not found" });
 
       try {
-        await ctx.db.vote.upsert({
+        await ctx.db.vote.delete({
           where: {
             songId_userId: {
               songId: input.songId,
               userId: acc.id,
             },
           },
-          update: { voteType: "DOWNVOTE" },
-          create: {
-            songId: input.songId,
-            userId: acc.id,
-            voteType: "DOWNVOTE",
-          },
+          // update: { voteType: "DOWNVOTE" },
+          // create: {
+          //   songId: input.songId,
+          //   userId: acc.id,
+          //   voteType: "DOWNVOTE",
+          // },
         });
       } catch (e) {
         throw new TRPCError({

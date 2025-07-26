@@ -5,9 +5,16 @@ import {
   ChevronUp,
   Heart,
   MoreVertical,
+  Pause,
 } from "lucide-react";
-import { useRef, useState } from "react";
-import LiteYoutubeEmbed from "react-lite-youtube-embed";
+import {
+  forwardRef,
+  useRef,
+  useState,
+  type Dispatch,
+  type RefObject,
+  type SetStateAction,
+} from "react";
 
 export type SongType = {
   id: string;
@@ -28,12 +35,11 @@ export type SongProps = {
   song: SongType;
   index: number;
   voteForSong: (songId: string, increment?: boolean) => void;
+  ytRef: RefObject<HTMLIFrameElement>;
 };
 
-export const Song = ({ song, index, voteForSong }: SongProps) => {
+export const Song = ({ song, index, voteForSong, ytRef }: SongProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
-  const ytRef = useRef<HTMLIFrameElement>(null);
-
   return (
     <div
       className={`rounded-xl border bg-white/5 p-4 transition-all duration-200 ${
@@ -42,13 +48,6 @@ export const Song = ({ song, index, voteForSong }: SongProps) => {
           : "border-white/10 hover:border-white/20 hover:bg-white/10"
       }`}
     >
-      <LiteYoutubeEmbed
-        id="hl3-ZPg-JAA"
-        title="Rich Spirit"
-        ref={ytRef}
-        enableJsApi
-        style={{ display: "none" }}
-      />
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <div
@@ -58,10 +57,10 @@ export const Song = ({ song, index, voteForSong }: SongProps) => {
                 : "bg-white/10 text-white/70"
             }`}
           >
-            {true ? (
+            {isPlaying ? (
               <button
                 onClick={() => {
-                  setIsPlaying((oldState) => !oldState);
+                  setIsPlaying(false);
                   ytRef.current?.contentWindow?.postMessage(
                     `{"event": "command", "func": "${isPlaying ? "pauseVideo" : "playVideo"}"}`,
                     "*",
@@ -71,7 +70,17 @@ export const Song = ({ song, index, voteForSong }: SongProps) => {
                 <Play className="h-4 w-4" />
               </button>
             ) : (
-              index + 1
+              <button
+                onClick={() => {
+                  setIsPlaying(true);
+                  ytRef.current?.contentWindow?.postMessage(
+                    `{"event": "command", "func": "${isPlaying ? "pauseVideo" : "playVideo"}"}`,
+                    "*",
+                  );
+                }}
+              >
+                <Pause className="h-4 w-4" />
+              </button>
             )}
           </div>
           <div className="flex-1">
